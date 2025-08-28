@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Price</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+        body { font-family: "Montserrat", sans-serif; margin: 20px; }
+        .navbar { background-color: #333; overflow: hidden; margin-bottom: 20px; }
+        .navbar a { float: left; color: white; text-decoration: none; padding: 14px 20px; }
+        .navbar a:hover { background-color: #ddd; color: black; }
+        .navbar a.active { background-color: #38803A; }
+        .form-container { max-width: 500px; margin: 0 auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        select, input[type="number"] { 
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; 
+            box-sizing: border-box;
+        }
+        button { 
+            background-color: #38803A; color: white; padding: 12px 20px; 
+            border: none; border-radius: 4px; cursor: pointer; width: 100%;
+        }
+        button:hover { background-color: #2d6c2f; }
+        .success { color: green; margin-bottom: 15px; }
+        .error { color: red; margin-bottom: 15px; }
+        .no-companies { 
+            background-color: #fff3cd; color: #856404; padding: 15px; 
+            border: 1px solid #ffeaa7; border-radius: 4px; margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/dashboard">All Companies</a>
+        <a href="/dashboard/company">Select Company</a>
+        <a href="/company_input">Add Company</a>
+        <a href="/price_input" class="active">Add Price</a>
+    </div>
+
+    <div class="form-container">
+        <h1>Add Price Data</h1>
+        
+        <div th:if="${success}" class="success" th:text="${success}"></div>
+        <div th:if="${error}" class="error" th:text="${error}"></div>
+        
+        <div th:if="${companies.empty}" class="no-companies">
+            <strong>No companies available!</strong> 
+            You need to <a href="/company_input">add a company</a> first before adding price data.
+        </div>
+        
+        <form th:unless="${companies.empty}" action="/price_input" method="post">
+            <div class="form-group">
+                <label for="companyId">Select Company:</label>
+                <select id="companyId" name="companyId" required>
+                    <option value="">-- Choose a company --</option>
+                    <option th:each="company : ${companies}" 
+                            th:value="${company.id}" 
+                            th:text="${company.name}"></option>
+                </select>
+            </div>
+            
+            
+            <div class="form-group">
+                <label for="price">Price (¤1.00 - ¤20.00):</label>
+                <input type="number" id="price" name="price" step="0.01" min="1.00" max="20.00" required 
+                       placeholder="Enter price between ¤1.00 and ¤20.00">
+            </div>
+            
+            <button type="submit">Add Price</button>
+        </form>
+        
+        <div style="margin-top: 20px; text-align: center;">
+            <a href="/dashboard">Back to Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>

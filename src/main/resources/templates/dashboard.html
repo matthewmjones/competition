@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Competition Dashboard</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+        body { font-family: "Montserrat", sans-serif; margin: 20px; }
+        .navbar { background-color: #333; overflow: hidden; margin-bottom: 20px; }
+        .navbar a { float: left; color: white; text-decoration: none; padding: 14px 20px; }
+        .navbar a:hover { background-color: #ddd; color: black; }
+        .navbar a.active { background-color: #38803A; }
+        .company-card { background-color: #f9f9f9; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .charts-container { margin-top: 20px; }
+        #charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-top: 20px; }
+        .chart-container { background-color: #f9f9f9; padding: 15px; border-radius: 5px; }
+        .chart-title { margin: 0 0 10px 0; font-size: 16px; font-weight: bold; text-align: center; }
+        svg { border: 1px solid #ddd; }
+        .line { fill: none; stroke: #007cba; stroke-width: 2px; }
+        .line-demand { fill: none; stroke: #d2001c; stroke-width: 2px; }
+        .dot { fill: #007cba; stroke: #007cba; stroke-width: 1.5px; }
+        .dot-demand { fill: #d2001c; stroke: #d2001c; stroke-width: 1.5px; }
+        .axis-label { font-size: 12px; font-weight: bold; }
+        .axis-price { color: #007cba; }
+        .axis-demand { color: #d2001c; }
+        .axis { font-size: 12px; }
+        .axis path, .axis line { fill: none; stroke: #000; shape-rendering: crispEdges; }
+        .grid line { stroke: lightgrey; stroke-opacity: 0.7; shape-rendering: crispEdges; }
+        .grid path { stroke-width: 0; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/dashboard" class="active">All Companies</a>
+        <a href="/dashboard/company">Select Company</a>
+        <a href="/company_input">Add Company</a>
+        <a href="/price_input">Add Price</a>
+    </div>
+
+    <h1>Competition Dashboard</h1>
+    
+    <div class="charts-container">
+        <h3>Current Profit by Company</h3>
+        <div id="profit-bar-chart" style="margin-bottom: 30px;"></div>
+        
+        <h3>Price & Demand Trends</h3>
+        <div style="margin-bottom: 10px;">
+            <span style="color: #007cba;">■ Price (¤1.00 - ¤20.00)</span> &nbsp;&nbsp; 
+            <span style="color: #d2001c;">■ Demand (calculated)</span>
+        </div>
+        <div id="charts-grid"></div>
+    </div>
+
+    <script th:inline="javascript">
+        // Get company data from Thymeleaf
+        let companiesData = /*[[${companies}]]*/ [];
+        
+        // Set up Server-Sent Events for real-time updates
+        const eventSource = new EventSource('/api/chart-updates');
+        
+        eventSource.addEventListener('chart-update', function(event) {
+            console.log('Received chart update event');
+            refreshCharts();
+        });
+        
+        eventSource.onerror = function(event) {
+            console.log('SSE connection error:', event);
+        };
+        
+        function refreshCharts() {
+            fetch('/api/chart-data/all')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Refreshing charts with new data');
+                    companiesData = data.companies;
+                    redrawAllCharts();
+                })
+                .catch(error => {
+                    console.error('Error fetching chart data:', error);
+                });
+        }
+        
+        function drawProfitBarChart(data) {
+            // Prepare profit data for bar chart
+            const profitData = data.map(company => ({
+                name: company.name,
+                currentProfit: company.profits && company.profits.length > 0 
+                    ? company.profits[company.profits.length - 1].profit 
+                    : 0
+            })).sort((a, b) => b.currentProfit - a.currentProfit); // Sort by profit descending
+            
+            if (profitData.length === 0) {
+                d3.select('#profit-bar-chart').selectAll('*').remove();
+                return;
+            }
+            
+            // Chart dimensions
+            const margin = {top: 20, right: 80, bottom: 40, left: 120};
+            const width = 800 - margin.left - margin.right;
+            const height = Math.max(300, profitData.length * 50) - margin.top - margin.bottom;
+            
+            // Create scales - allow negative values
+            const minProfit = d3.min(profitData, d => d.currentProfit);
+            const maxProfit = d3.max(profitData, d => d.currentProfit);
+            const xScale = d3.scaleLinear()
+                .domain([Math.min(minProfit, 0), Math.max(maxProfit, 0)])
+                .nice()
+                .range([0, width]);
+                
+            const yScale = d3.scaleBand()
+                .domain(profitData.map(d => d.name))
+                .range([0, height])
+                .padding(0.2);
+            
+            // Create or select SVG
+            let svg = d3.select('#profit-bar-chart').select('svg');
+            if (svg.empty()) {
+                svg = d3.select('#profit-bar-chart')
+                    .append('svg')
+                    .attr('width', width + margin.left + margin.right)
+                    .attr('height', height + margin.top + margin.bottom);
+                    
+                svg.append('g')
+                    .attr('class', 'chart-group')
+                    .attr('transform', `translate(${margin.left},${margin.top})`);
+            }
+            
+            const g = svg.select('.chart-group');
+            
+            // Update SVG dimensions if needed
+            svg.transition().duration(750)
+                .attr('height', height + margin.top + margin.bottom);
+            
+            // DATA JOIN - bind data to bars
+            const bars = g.selectAll('.bar')
+                .data(profitData, d => d.name);
+            
+            // ENTER - create new bars
+            const barsEnter = bars.enter().append('rect')
+                .attr('class', 'bar')
+                .attr('x', xScale(0))  // Start at zero line
+                .attr('width', 0)
+                .attr('height', yScale.bandwidth())
+                .attr('opacity', 0.8)
+                .attr('y', d => yScale(d.name));
+            
+            // UPDATE + ENTER - update all bars (new and existing)
+            bars.merge(barsEnter)
+                .attr('height', yScale.bandwidth())  // Keep height consistent (no animation)
+                .transition()
+                .duration(750)
+                .ease(d3.easeQuadOut)
+                .attr('y', d => yScale(d.name))  // Animate Y position for ranking changes
+                .attr('x', d => d.currentProfit >= 0 ? xScale(0) : xScale(d.currentProfit))  // Position based on sign
+                .attr('width', d => Math.abs(xScale(d.currentProfit) - xScale(0)))  // Width from zero to value
+                .attr('fill', d => d.currentProfit >= 0 ? '#38803A' : '#dc3545');
+            
+            // EXIT - remove bars for companies no longer in data
+            bars.exit()
+                .transition()
+                .duration(375)
+                .attr('width', 0)
+                .attr('opacity', 0)
+                .remove();
+            
+            // DATA JOIN - bind data to labels
+            const labels = g.selectAll('.profit-label')
+                .data(profitData, d => d.name);
+            
+            // ENTER - create new labels
+            const labelsEnter = labels.enter().append('text')
+                .attr('class', 'profit-label')
+                .attr('dy', '0.35em')
+                .style('font-size', '12px')
+                .style('fill', '#333')
+                .attr('opacity', 0);
+            
+            // UPDATE + ENTER - update all labels
+            labels.merge(labelsEnter)
+                .transition()
+                .duration(750)
+                .ease(d3.easeQuadOut)
+                .attr('x', d => d.currentProfit >= 0 ? xScale(d.currentProfit) + 5 : xScale(d.currentProfit) - 5)  // Position based on sign
+                .attr('y', d => yScale(d.name) + yScale.bandwidth() / 2)  // Animate Y position for ranking changes
+                .attr('opacity', 1)
+                .style('text-anchor', d => d.currentProfit >= 0 ? 'start' : 'end')  // Anchor based on sign
+                .tween('text', function(d) {
+                    const i = d3.interpolate(+this.textContent.replace(/[$,]/g, '') || 0, d.currentProfit);
+                    return function(t) {
+                        this.textContent = `¤${i(t).toFixed(2)}`;
+                    };
+                });
+            
+            // EXIT - remove labels for companies no longer in data
+            labels.exit()
+                .transition()
+                .duration(375)
+                .attr('opacity', 0)
+                .remove();
+            
+            // Update y-axis with animation
+            const yAxis = g.selectAll('.y-axis');
+            if (yAxis.empty()) {
+                g.append('g')
+                    .attr('class', 'y-axis')
+                    .style('font-size', '12px')
+                    .call(d3.axisLeft(yScale));
+            } else {
+                yAxis.transition()
+                    .duration(750)
+                    .call(d3.axisLeft(yScale));
+            }
+            
+            // Update x-axis with animation
+            const xAxis = g.selectAll('.x-axis');
+            if (xAxis.empty()) {
+                g.append('g')
+                    .attr('class', 'x-axis')
+                    .attr('transform', `translate(0,${height})`)
+                    .style('font-size', '12px')
+                    .call(d3.axisBottom(xScale).tickFormat(d => `¤${d.toFixed(0)}`));
+            } else {
+                xAxis.transition()
+                    .duration(750)
+                    .attr('transform', `translate(0,${height})`)
+                    .call(d3.axisBottom(xScale).tickFormat(d => `¤${d.toFixed(0)}`));
+            }
+            
+            // Add or update zero line
+            const zeroLine = g.selectAll('.zero-line');
+            if (zeroLine.empty()) {
+                g.append('line')
+                    .attr('class', 'zero-line')
+                    .attr('x1', xScale(0))
+                    .attr('x2', xScale(0))
+                    .attr('y1', 0)
+                    .attr('y2', height)
+                    .style('stroke', '#666')
+                    .style('stroke-width', 2)
+                    .style('stroke-dasharray', '3,3');
+            } else {
+                zeroLine.transition()
+                    .duration(750)
+                    .attr('x1', xScale(0))
+                    .attr('x2', xScale(0))
+                    .attr('y2', height);
+            }
+            
+            // Add or update x-axis label
+            const xLabel = g.selectAll('.x-label');
+            if (xLabel.empty()) {
+                g.append('text')
+                    .attr('class', 'x-label')
+                    .attr('x', width / 2)
+                    .attr('y', height + 35)
+                    .style('text-anchor', 'middle')
+                    .style('font-size', '14px')
+                    .style('font-weight', 'bold')
+                    .text('Current Profit (¤)');
+            } else {
+                xLabel.transition()
+                    .duration(750)
+                    .attr('y', height + 35);
+            }
+        }
+
+        function redrawAllCharts() {
+            // Clear existing charts
+            d3.select('#charts-grid').selectAll('*').remove();
+            
+            // Process the data for D3
+            const processedData = companiesData.map(company => ({
+            name: company.name,
+            prices: company.prices ? company.prices.map(price => ({
+                time: new Date('1970-01-01T' + price.time + 'Z'), // Convert LocalTime to Date
+                price: parseFloat(price.price)
+            })).sort((a, b) => a.time - b.time) : [],
+            demands: company.demands ? company.demands.map(demand => ({
+                time: new Date('1970-01-01T' + demand.time + 'Z'), // Convert LocalTime to Date
+                demand: parseFloat(demand.demand)
+            })).sort((a, b) => a.time - b.time) : [],
+            profits: company.profits ? company.profits.map(profit => ({
+                time: new Date('1970-01-01T' + profit.time + 'Z'), // Convert LocalTime to Date
+                profit: parseFloat(profit.profit)
+            })).sort((a, b) => a.time - b.time) : []
+        })).filter(company => company.prices.length > 0 || company.demands.length > 0 || company.profits.length > 0);
+
+        // Draw profit bar chart
+        drawProfitBarChart(processedData);
+        
+        if (processedData.length > 0) {
+            // Find global time range across all companies
+            const allTimes = processedData.flatMap(d => [...d.prices.map(p => p.time), ...d.demands.map(d => d.time)]);
+            const timeExtent = d3.extent(allTimes);
+            
+            // Price range constrained to ¤1-¤20 for economic simulation
+            const priceExtent = [1, 20];
+            
+            // Find global demand range for consistent scaling
+            const allDemands = processedData.flatMap(d => d.demands.map(d => d.demand));
+            const demandExtent = d3.extent(allDemands);
+            
+            // Chart dimensions - increased right margin for second y-axis
+            const margin = {top: 20, right: 60, bottom: 40, left: 60};
+            const width = 400 - margin.left - margin.right;
+            const height = 250 - margin.top - margin.bottom;
+            
+            // Create scales
+            const xScale = d3.scaleTime()
+                .domain(timeExtent)
+                .range([0, width]);
+                
+            const yScalePrice = d3.scaleLinear()
+                .domain(priceExtent)
+                .nice()
+                .range([height, 0]);
+                
+            const yScaleDemand = d3.scaleLinear()
+                .domain(demandExtent)
+                .nice()
+                .range([height, 0]);
+            
+            // Line generators
+            const priceLine = d3.line()
+                .x(d => xScale(d.time))
+                .y(d => yScalePrice(d.price))
+                .curve(d3.curveMonotoneX);
+                
+            const demandLine = d3.line()
+                .x(d => xScale(d.time))
+                .y(d => yScaleDemand(d.demand))
+                .curve(d3.curveMonotoneX);
+            
+            // Create charts
+            const chartsGrid = d3.select('#charts-grid');
+            
+            processedData.forEach(company => {
+                const chartContainer = chartsGrid.append('div')
+                    .attr('class', 'chart-container');
+                
+                // Create title with current price
+                let titleText = company.name;
+                if (company.prices && company.prices.length > 0) {
+                    const currentPrice = company.prices[company.prices.length - 1].price;
+                    titleText = `${company.name}: ¤${currentPrice.toFixed(2)}`;
+                }
+                
+                chartContainer.append('h4')
+                    .attr('class', 'chart-title')
+                    .text(titleText);
+                
+                const svg = chartContainer.append('svg')
+                    .attr('width', width + margin.left + margin.right)
+                    .attr('height', height + margin.top + margin.bottom);
+                
+                const g = svg.append('g')
+                    .attr('transform', `translate(${margin.left},${margin.top})`);
+                
+                // Add grid lines (based on price scale)
+                g.append('g')
+                    .attr('class', 'grid')
+                    .attr('transform', `translate(0,${height})`)
+                    .call(d3.axisBottom(xScale)
+                        .tickSize(-height)
+                        .tickFormat('')
+                    );
+                
+                g.append('g')
+                    .attr('class', 'grid')
+                    .call(d3.axisLeft(yScalePrice)
+                        .tickSize(-width)
+                        .tickFormat('')
+                    );
+                
+                // Add x-axis
+                g.append('g')
+                    .attr('class', 'axis')
+                    .attr('transform', `translate(0,${height})`)
+                    .call(d3.axisBottom(xScale)
+                        .tickFormat(d3.timeFormat('%H:%M'))
+                    );
+                
+                // Add left y-axis (Price)
+                g.append('g')
+                    .attr('class', 'axis axis-price')
+                    .call(d3.axisLeft(yScalePrice)
+                        .tickFormat(d => '¤' + d.toFixed(2))
+                    );
+                
+                // Add right y-axis (Demand)
+                g.append('g')
+                    .attr('class', 'axis axis-demand')
+                    .attr('transform', `translate(${width}, 0)`)
+                    .call(d3.axisRight(yScaleDemand)
+                        .tickFormat(d => d.toFixed(0))
+                    );
+                
+                // Add axis labels
+                g.append('text')
+                    .attr('class', 'axis-label axis-price')
+                    .attr('transform', 'rotate(-90)')
+                    .attr('y', -40)
+                    .attr('x', -height/2)
+                    .style('text-anchor', 'middle')
+                    .text('Price (¤)');
+                    
+                g.append('text')
+                    .attr('class', 'axis-label axis-demand')
+                    .attr('transform', 'rotate(90)')
+                    .attr('y', -width - 40)
+                    .attr('x', height/2)
+                    .style('text-anchor', 'middle')
+                    .text('Demand');
+                
+                // Add price line and dots if data exists
+                if (company.prices && company.prices.length > 0) {
+                    g.append('path')
+                        .datum(company.prices)
+                        .attr('class', 'line')
+                        .attr('d', priceLine);
+                    
+                    g.selectAll('.dot-price')
+                        .data(company.prices)
+                        .enter().append('circle')
+                        .attr('class', 'dot')
+                        .attr('cx', d => xScale(d.time))
+                        .attr('cy', d => yScalePrice(d.price))
+                        .attr('r', 3)
+                        .append('title')
+                        .text(d => `${d3.timeFormat('%H:%M')(d.time)}: ¤${d.price.toFixed(2)}`);
+                }
+                
+                // Add demand line and dots if data exists
+                if (company.demands && company.demands.length > 0) {
+                    g.append('path')
+                        .datum(company.demands)
+                        .attr('class', 'line-demand')
+                        .attr('d', demandLine);
+                    
+                    g.selectAll('.dot-demand')
+                        .data(company.demands)
+                        .enter().append('circle')
+                        .attr('class', 'dot-demand')
+                        .attr('cx', d => xScale(d.time))
+                        .attr('cy', d => yScaleDemand(d.demand))
+                        .attr('r', 3)
+                        .append('title')
+                        .text(d => `${d3.timeFormat('%H:%M')(d.time)}: ${d.demand.toFixed(2)} units`);
+                }
+            });
+            } else {
+                d3.select('#charts-grid')
+                    .append('p')
+                    .style('text-align', 'center')
+                    .style('color', '#666')
+                    .text('No price or demand data available for charting. Add some price data to see trends.');
+            }
+        }
+        
+        // Initial chart rendering
+        redrawAllCharts();
+    </script>
+</body>
+</html>

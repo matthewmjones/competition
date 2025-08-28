@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Competition Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+        body { font-family: "Montserrat", sans-serif; margin: 20px; }
+        .navbar { background-color: #333; overflow: hidden; margin-bottom: 20px; }
+        .navbar a { float: left; color: white; text-decoration: none; padding: 14px 20px; }
+        .navbar a:hover { background-color: #ddd; color: black; }
+        .navbar a.active { background-color: #38803A; }
+        
+        .admin-panel { max-width: 800px; margin: 0 auto; }
+        .stats-card, .action-card { background-color: #f9f9f9; padding: 20px; margin: 20px 0; border-radius: 5px; border-left: 5px solid #007cba; }
+        .action-card.danger { border-left-color: #d2001c; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 15px 0; }
+        .stat-item { text-align: center; padding: 15px; background-color: white; border-radius: 3px; }
+        .stat-number { font-size: 24px; font-weight: bold; color: #007cba; }
+        .stat-label { font-size: 14px; color: #666; }
+        
+        .reset-button { 
+            background-color: #d2001c; 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            margin: 10px 5px;
+            min-width: 200px;
+        }
+        .reset-button:hover { background-color: #b8001a; }
+        .reset-button:disabled { background-color: #ccc; cursor: not-allowed; }
+        
+        .confirmation-box { 
+            background-color: #fff3cd; 
+            border: 1px solid #ffeaa7; 
+            border-radius: 5px; 
+            padding: 20px; 
+            margin: 20px 0; 
+            display: none;
+        }
+        .confirmation-box.show { display: block; }
+        .confirmation-input { 
+            width: 100%; 
+            padding: 10px; 
+            border: 2px solid #ddd; 
+            border-radius: 3px; 
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .confirm-button { 
+            background-color: #d2001c; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 3px; 
+            cursor: pointer; 
+            margin-right: 10px;
+        }
+        .cancel-button { 
+            background-color: #6c757d; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 3px; 
+            cursor: pointer; 
+        }
+        
+        .alert { 
+            padding: 15px; 
+            margin: 15px 0; 
+            border-radius: 5px; 
+            display: none;
+        }
+        .alert.success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .alert.error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .alert.show { display: block; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/dashboard">Dashboard</a>
+        <a href="/company_input">Add Company</a>
+        <a href="/price_input">Add Price</a>
+        <a href="/admin" class="active">Admin</a>
+    </div>
+
+    <div class="admin-panel">
+        <h1>Admin Panel</h1>
+        
+        <div class="alert" id="alert"></div>
+        
+        <div class="stats-card">
+            <h3>Current Database Statistics</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" th:text="${stats.companies}">0</div>
+                    <div class="stat-label">Companies</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" th:text="${stats.prices}">0</div>
+                    <div class="stat-label">Price Records</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" th:text="${stats.demands}">0</div>
+                    <div class="stat-label">Demand Records</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" th:text="${stats.profits}">0</div>
+                    <div class="stat-label">Profit Records</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-card danger">
+            <h3>Data Reset Options</h3>
+            <p><strong>Warning:</strong> These actions cannot be undone. Make sure you understand what each option does:</p>
+            
+            <div style="margin: 20px 0;">
+                <button class="reset-button" onclick="showResetDataConfirmation()">
+                    Reset Data Only
+                </button>
+                <p style="margin: 5px 0; color: #666;">
+                    Deletes all price, demand, and profit data. <strong>Companies are preserved.</strong>
+                </p>
+            </div>
+            
+            <div style="margin: 20px 0;">
+                <button class="reset-button" onclick="showResetAllConfirmation()">
+                    Reset Everything
+                </button>
+                <p style="margin: 5px 0; color: #666;">
+                    Deletes <strong>all data</strong> including companies, prices, demands, and profits.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Confirmation dialog for data-only reset -->
+        <div class="confirmation-box" id="resetDataConfirmation">
+            <h4>⚠️ Confirm Data Reset</h4>
+            <p>This will delete <strong th:text="${stats.prices + stats.demands + stats.profits}">X</strong> records (prices, demands, profits) while keeping <strong th:text="${stats.companies}">X</strong> companies.</p>
+            <p>Type <code>DELETE_DATA_KEEP_COMPANIES</code> to confirm:</p>
+            <input type="text" class="confirmation-input" id="dataConfirmText" placeholder="Type confirmation text here">
+            <div style="margin-top: 15px;">
+                <button class="confirm-button" onclick="executeResetData()">Delete Data</button>
+                <button class="cancel-button" onclick="hideConfirmations()">Cancel</button>
+            </div>
+        </div>
+        
+        <!-- Confirmation dialog for complete reset -->
+        <div class="confirmation-box" id="resetAllConfirmation">
+            <h4>⚠️ Confirm Complete Reset</h4>
+            <p>This will delete <strong>ALL DATA</strong> including <strong th:text="${stats.companies + stats.prices + stats.demands + stats.profits}">X</strong> total records.</p>
+            <p>Type <code>DELETE_ALL_DATA</code> to confirm:</p>
+            <input type="text" class="confirmation-input" id="allConfirmText" placeholder="Type confirmation text here">
+            <div style="margin-top: 15px;">
+                <button class="confirm-button" onclick="executeResetAll()">Delete Everything</button>
+                <button class="cancel-button" onclick="hideConfirmations()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showResetDataConfirmation() {
+            hideConfirmations();
+            document.getElementById('resetDataConfirmation').classList.add('show');
+            document.getElementById('dataConfirmText').focus();
+        }
+        
+        function showResetAllConfirmation() {
+            hideConfirmations();
+            document.getElementById('resetAllConfirmation').classList.add('show');
+            document.getElementById('allConfirmText').focus();
+        }
+        
+        function hideConfirmations() {
+            document.getElementById('resetDataConfirmation').classList.remove('show');
+            document.getElementById('resetAllConfirmation').classList.remove('show');
+            document.getElementById('dataConfirmText').value = '';
+            document.getElementById('allConfirmText').value = '';
+            hideAlert();
+        }
+        
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = 'alert ' + type + ' show';
+        }
+        
+        function hideAlert() {
+            document.getElementById('alert').classList.remove('show');
+        }
+        
+        function executeResetData() {
+            const confirmText = document.getElementById('dataConfirmText').value;
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Deleting...';
+            
+            fetch('/admin/reset/data-only', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'confirm=' + encodeURIComponent(confirmText)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert(data.message + '. Deleted: ' + 
+                        data.deleted.prices + ' prices, ' +
+                        data.deleted.demands + ' demands, ' +
+                        data.deleted.profits + ' profits.', 'success');
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    showAlert('Error: ' + data.error, 'error');
+                }
+            })
+            .catch(error => {
+                showAlert('Network error: ' + error.message, 'error');
+            })
+            .finally(() => {
+                button.disabled = false;
+                button.textContent = 'Delete Data';
+                hideConfirmations();
+            });
+        }
+        
+        function executeResetAll() {
+            const confirmText = document.getElementById('allConfirmText').value;
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Deleting...';
+            
+            fetch('/admin/reset/all', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'confirm=' + encodeURIComponent(confirmText)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert(data.message + '. Deleted: ' + 
+                        data.deleted.companies + ' companies, ' +
+                        data.deleted.prices + ' prices, ' +
+                        data.deleted.demands + ' demands, ' +
+                        data.deleted.profits + ' profits.', 'success');
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    showAlert('Error: ' + data.error, 'error');
+                }
+            })
+            .catch(error => {
+                showAlert('Network error: ' + error.message, 'error');
+            })
+            .finally(() => {
+                button.disabled = false;
+                button.textContent = 'Delete Everything';
+                hideConfirmations();
+            });
+        }
+        
+        document.getElementById('dataConfirmText').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') executeResetData();
+        });
+        
+        document.getElementById('allConfirmText').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') executeResetAll();
+        });
+    </script>
+</body>
+</html>
