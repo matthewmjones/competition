@@ -1,0 +1,8 @@
+[build]
+providers = ["java"]
+
+[build.env]
+BP_JVM_VERSION = "21"
+
+[variables]
+MAVEN_ARGS = "clean package -DskipTests"
