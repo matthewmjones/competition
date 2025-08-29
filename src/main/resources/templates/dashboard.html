@@ -5,34 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Competition Dashboard</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <link rel="stylesheet" href="/css/responsive-navbar.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
-        .content-wrapper { padding: 20px; }
-        .company-card { background-color: #f9f9f9; padding: 15px; margin: 10px 0; border-radius: 5px; }
-        .charts-container { margin-top: 20px; }
-        #charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
-        @media (max-width: 768px) {
-            #charts-grid { grid-template-columns: 1fr; gap: 15px; }
-            .content-wrapper { padding: 10px; }
-            .chart-container { padding: 10px; }
-            .chart-title { font-size: 14px; }
-        }
-        .chart-container { background-color: #f9f9f9; padding: 15px; border-radius: 5px; }
-        .chart-title { margin: 0 0 10px 0; font-size: 16px; font-weight: bold; text-align: center; }
-        svg { border: 1px solid #ddd; }
-        .line { fill: none; stroke: #007cba; stroke-width: 2px; }
-        .line-demand { fill: none; stroke: #d2001c; stroke-width: 2px; }
-        .dot { fill: #007cba; stroke: #007cba; stroke-width: 1.5px; }
-        .dot-demand { fill: #d2001c; stroke: #d2001c; stroke-width: 1.5px; }
-        .axis-label { font-size: 12px; font-weight: bold; }
-        .axis-price { color: #007cba; }
-        .axis-demand { color: #d2001c; }
-        .axis { font-size: 12px; }
-        .axis path, .axis line { fill: none; stroke: #000; shape-rendering: crispEdges; }
-        .grid line { stroke: lightgrey; stroke-opacity: 0.7; shape-rendering: crispEdges; }
-        .grid path { stroke-width: 0; }
-    </style>
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
     <nav class="navbar" role="navigation" aria-label="Main navigation">

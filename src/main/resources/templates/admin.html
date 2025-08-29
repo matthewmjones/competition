@@ -4,78 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - Competition Dashboard</title>
-    <link rel="stylesheet" href="/css/responsive-navbar.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
-        .content-wrapper { padding: 20px; }
-        
-        .admin-panel { max-width: 800px; margin: 0 auto; }
-        .stats-card, .action-card { background-color: #f9f9f9; padding: 20px; margin: 20px 0; border-radius: 5px; border-left: 5px solid #007cba; }
-        .action-card.danger { border-left-color: #d2001c; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 15px 0; }
-        .stat-item { text-align: center; padding: 15px; background-color: white; border-radius: 3px; }
-        .stat-number { font-size: 24px; font-weight: bold; color: #007cba; }
-        .stat-label { font-size: 14px; color: #666; }
-        
-        .reset-button { 
-            background-color: #d2001c; 
-            color: white; 
-            border: none; 
-            padding: 12px 24px; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            margin: 10px 5px;
-            min-width: 200px;
-        }
-        .reset-button:hover { background-color: #b8001a; }
-        .reset-button:disabled { background-color: #ccc; cursor: not-allowed; }
-        
-        .confirmation-box { 
-            background-color: #fff3cd; 
-            border: 1px solid #ffeaa7; 
-            border-radius: 5px; 
-            padding: 20px; 
-            margin: 20px 0; 
-            display: none;
-        }
-        .confirmation-box.show { display: block; }
-        .confirmation-input { 
-            width: 100%; 
-            padding: 10px; 
-            border: 2px solid #ddd; 
-            border-radius: 3px; 
-            margin: 10px 0;
-            font-family: monospace;
-        }
-        .confirm-button { 
-            background-color: #d2001c; 
-            color: white; 
-            border: none; 
-            padding: 10px 20px; 
-            border-radius: 3px; 
-            cursor: pointer; 
-            margin-right: 10px;
-        }
-        .cancel-button { 
-            background-color: #6c757d; 
-            color: white; 
-            border: none; 
-            padding: 10px 20px; 
-            border-radius: 3px; 
-            cursor: pointer; 
-        }
-        
-        .alert { 
-            padding: 15px; 
-            margin: 15px 0; 
-            border-radius: 5px; 
-            display: none;
-        }
-        .alert.success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
-        .alert.error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
-        .alert.show { display: block; }
-    </style>
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
     <nav class="navbar" role="navigation" aria-label="Main navigation">
