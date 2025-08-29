@@ -31,7 +31,7 @@ public class WebController {
     
     @GetMapping("/")
     public String home() {
-        return "redirect:/dashboard";
+        return "index";
     }
     
     @GetMapping("/dashboard")

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Economic Competition Simulation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+        body { font-family: "Montserrat", sans-serif; margin: 20px; }
+        .navbar { background-color: #333; overflow: hidden; margin-bottom: 20px; }
+        .navbar a { float: left; color: white; text-decoration: none; padding: 14px 20px; }
+        .navbar a:hover { background-color: #ddd; color: black; }
+        .navbar a.active { background-color: #38803A; }
+        .company-card { background-color: #f9f9f9; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .chart-container { background-color: #f9f9f9; padding: 15px; border-radius: 5px; }
+        .intro-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .intro-section h1 {
+            font-size: 2.2em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .intro-section p {
+            font-size: 1.1em;
+            color: #666;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto 20px auto;
+        }
+        .concepts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .step-number {
+            background: #38803A;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .step-content h3 {
+            margin: 0 0 8px 0;
+            font-size: 1.2em;
+            color: #333;
+        }
+        .step-content p {
+            margin: 0;
+            line-height: 1.5;
+            color: #666;
+        }
+        .formulas {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+        .formulas h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .formula {
+            background: white;
+            padding: 8px;
+            margin: 8px 0;
+            border-radius: 3px;
+            border-left: 4px solid #38803A;
+        }
+        .cta-section {
+            text-align: center;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 30px;
+        }
+        .start-button {
+            background-color: #38803A;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+            display: inline-block;
+            margin: 0 5px 10px 5px;
+        }
+        .start-button:hover {
+            background-color: #2d6c2f;
+        }
+        .secondary-button {
+            background-color: #007cba;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 400;
+            display: inline-block;
+            margin: 0 5px;
+        }
+        .secondary-button:hover {
+            background-color: #005a87;
+        }
+        @media (max-width: 768px) {
+            body { margin: 10px; }
+            .step {
+                flex-direction: column;
+                text-align: center;
+            }
+            .step-number {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/" class="active">Home</a>
+        <a href="/dashboard">All Companies</a>
+        <a href="/dashboard/company">Select Company</a>
+        <a href="/company_input">Add Company</a>
+        <a href="/price_input">Add Price</a>
+    </div>
+    <div class="intro-section">
+        <h1>🏢 Economic Competition Simulation</h1>
+        <p>Welcome to an interactive learning experience that demonstrates the principles of competitive economics! 
+           Compete with your friends to see who can maximize their company's profit in a dynamic market where 
+           everyone's pricing decisions affect demand for all competitors.</p>
+    </div>
+
+    <div class="company-card">
+        <h2>🎮 How to Play</h2>
+        
+        <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h3>Create Your Company</h3>
+                <p>Start by creating a fictional company with a unique name. This will be your identity in the competitive market simulation.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h3>Set Your Initial Price</h3>
+                <p>Choose your starting price between ¤1.00 and ¤20.00. Wait for all participants to set their initial prices before the competition begins. Remember: your pricing affects not just your demand, but everyone else's too!</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h3>Compete for Maximum Profit</h3>
+                <p>Once everyone has set their initial prices, the real competition begins! Adjust your prices strategically to maximize your profit while watching how the market responds. Will you undercut competitors or position yourself as a premium option?</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="company-card">
+        <h2>📚 What You'll Learn</h2>
+        <div class="concepts-grid">
+            <div class="chart-container">
+                <h3>Market Competition</h3>
+                <p>Understand how companies compete in real markets and how pricing strategies affect market share and profitability.</p>
+            </div>
+            <div class="chart-container">
+                <h3>Demand & Supply</h3>
+                <p>See how consumer demand responds to price changes and competitive positioning in real-time.</p>
+            </div>
+            <div class="chart-container">
+                <h3>Profit Optimization</h3>
+                <p>Learn to balance pricing strategies to maximize profit while considering costs and competitive pressure.</p>
+            </div>
+            <div class="chart-container">
+                <h3>Economic Formulas</h3>
+                <p>Apply mathematical models to predict market behavior and make data-driven business decisions.</p>
+            </div>
+        </div>
+        
+        <div class="formulas">
+            <h4>📈 Economic Formulas Used</h4>
+            <div class="formula">
+                <strong>Demand:</strong> demand = 100 - 5p + 2q<br>
+                <small>where p = your price, q = average competitor price</small>
+            </div>
+            <div class="formula">
+                <strong>Profit:</strong> profit = (price - 2) × demand<br>
+                <small>where 2 = fixed cost per unit</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="cta-section">
+        <h2>Ready to Start?</h2>
+        <p style="margin-bottom: 20px; color: #666;">Join the economic simulation and test your business strategy skills!</p>
+        
+        <a href="/company_input" class="start-button">Create Your Company</a>
+        
+        <div style="margin-top: 15px;">
+            <a href="/dashboard" class="secondary-button">View Dashboard</a>
+            <a href="/price_input" class="secondary-button">Set Prices</a>
+        </div>
+    </div>
+</body>
+</html>
