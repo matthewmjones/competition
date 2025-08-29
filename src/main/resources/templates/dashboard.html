@@ -11,7 +11,13 @@
         .content-wrapper { padding: 20px; }
         .company-card { background-color: #f9f9f9; padding: 15px; margin: 10px 0; border-radius: 5px; }
         .charts-container { margin-top: 20px; }
-        #charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-top: 20px; }
+        #charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+        @media (max-width: 768px) {
+            #charts-grid { grid-template-columns: 1fr; gap: 15px; }
+            .content-wrapper { padding: 10px; }
+            .chart-container { padding: 10px; }
+            .chart-title { font-size: 14px; }
+        }
         .chart-container { background-color: #f9f9f9; padding: 15px; border-radius: 5px; }
         .chart-title { margin: 0 0 10px 0; font-size: 16px; font-weight: bold; text-align: center; }
         svg { border: 1px solid #ddd; }
@@ -115,9 +121,18 @@
                 return;
             }
             
-            // Chart dimensions
-            const margin = {top: 20, right: 80, bottom: 40, left: 120};
-            const width = 800 - margin.left - margin.right;
+            // Responsive chart dimensions
+            const isMobile = window.innerWidth <= 768;
+            const margin = isMobile ? 
+                {top: 20, right: 40, bottom: 40, left: 80} : // Smaller margins on mobile
+                {top: 20, right: 80, bottom: 40, left: 120}; // Full margins on desktop
+            
+            const containerWidth = document.querySelector('#profit-bar-chart').clientWidth || window.innerWidth;
+            const availableWidth = isMobile ? 
+                Math.min(containerWidth - 20, window.innerWidth - 40) : // Mobile: leave padding
+                Math.min(containerWidth - 40, 800); // Desktop: max 800px
+            
+            const width = Math.max(300, availableWidth - margin.left - margin.right);
             const height = Math.max(300, profitData.length * 50) - margin.top - margin.bottom;
             
             // Create scales - allow negative values
@@ -321,9 +336,21 @@
             const allDemands = processedData.flatMap(d => d.demands.map(d => d.demand));
             const demandExtent = d3.extent(allDemands);
             
-            // Chart dimensions - increased right margin for second y-axis
-            const margin = {top: 20, right: 60, bottom: 40, left: 60};
-            const width = 400 - margin.left - margin.right;
+            // Responsive chart dimensions for individual company charts
+            const isMobile = window.innerWidth <= 768;
+            const margin = isMobile ? 
+                {top: 20, right: 50, bottom: 40, left: 50} : // Smaller margins on mobile
+                {top: 20, right: 60, bottom: 40, left: 60}; // Full margins on desktop
+            
+            // Calculate responsive width based on grid container
+            const gridContainer = document.querySelector('#charts-grid');
+            const containerWidth = gridContainer ? gridContainer.clientWidth : window.innerWidth;
+            const numColumns = isMobile ? 1 : Math.floor(containerWidth / 350); // Estimate columns
+            const chartWidth = isMobile ? 
+                Math.min(containerWidth - 40, window.innerWidth - 60) : // Mobile: full width minus padding
+                Math.max(300, (containerWidth / Math.max(numColumns, 1)) - 40); // Desktop: divide by columns
+            
+            const width = Math.max(250, chartWidth - margin.left - margin.right);
             const height = 250 - margin.top - margin.bottom;
             
             // Create scales
@@ -480,6 +507,15 @@
         
         // Initial chart rendering
         redrawAllCharts();
+        
+        // Add resize listener for responsive charts
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                redrawAllCharts();
+            }, 250); // Debounce resize events
+        });
     </script>
     </div>
     

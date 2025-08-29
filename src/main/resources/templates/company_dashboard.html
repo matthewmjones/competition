@@ -310,9 +310,21 @@
         })).sort((a, b) => a.time - b.time) : [];
 
         if (priceData.length > 0 || demandData.length > 0 || profitData.length > 0) {
-            const margin = {top: 20, right: 80, bottom: 60, left: 80};
-            const containerWidth = document.querySelector('.chart-half').clientWidth;
-            const width = Math.max(300, containerWidth - margin.left - margin.right - 40);
+            // Responsive margins and dimensions
+            const isMobile = window.innerWidth <= 768;
+            const margin = isMobile ? 
+                {top: 20, right: 50, bottom: 50, left: 60} : // Smaller margins on mobile
+                {top: 20, right: 80, bottom: 60, left: 80}; // Full margins on desktop
+            
+            const container = document.querySelector('.chart-half');
+            const containerWidth = container ? container.clientWidth : window.innerWidth;
+            
+            // More responsive width calculation for mobile
+            const availableWidth = isMobile ? 
+                Math.min(containerWidth - 20, window.innerWidth - 40) : // Mobile: leave 20px padding
+                containerWidth - 40; // Desktop: leave 40px padding
+            
+            const width = Math.max(250, availableWidth - margin.left - margin.right);
             const height = 350 - margin.top - margin.bottom;
             
             const allTimes = [...priceData.map(d => d.time), ...demandData.map(d => d.time), ...profitData.map(d => d.time)];
@@ -540,6 +552,15 @@
         
         // Initial chart rendering
         redrawAllCharts();
+        
+        // Add resize listener for responsive charts
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                redrawAllCharts();
+            }, 250); // Debounce resize events
+        });
     </script>
     </div>
     

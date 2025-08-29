@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Company</title>
+    <link rel="stylesheet" href="/css/responsive-navbar.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
         body { font-family: "Montserrat", sans-serif; margin: 20px; }
@@ -28,13 +29,33 @@
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <a href="/">Home</a>
-        <a href="/dashboard">All Companies</a>
-        <a href="/dashboard/company">Select Company</a>
-        <a href="/company_input" class="active">Add Company</a>
-        <a href="/price_input">Add Price</a>
-    </div>
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="navbar-container">
+            <a href="/" class="navbar-brand">Competition App</a>
+
+            <button class="navbar-toggle"
+                    aria-label="Toggle navigation menu"
+                    aria-expanded="false"
+                    aria-controls="navbar-menu">
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </button>
+        </div>
+
+        <div class="navbar-menu" id="navbar-menu">
+            <ul class="navbar-nav">
+                <li><a href="/">Home</a></li>
+                <li><a href="/dashboard">All Companies</a></li>
+                <li><a href="/dashboard/company">Select Company</a></li>
+                <li><a href="/company_input" class="active">Add Company</a></li>
+                <li><a href="/price_input">Add Price</a></li>
+                <li><a href="/admin">Admin</a></li>
+            </ul>
+        </div>
+    </nav>
 
     <div class="form-container">
         <h1>Add New Company</h1>
