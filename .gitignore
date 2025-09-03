@@ -86,4 +86,7 @@ yarn-error.log*
 # Deployment Documentation
 RAILWAY_DEPLOYMENT.md
 CLAUDE.md
-CLAUDE.md
+README-CSS.md
+migration-checklist.md
+component-inventory.md
+src/main/resources/static/css/styles.css.backup
