@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Competition Dashboard</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
@@ -55,17 +57,46 @@
         // Get company data from Thymeleaf
         let companiesData = /*[[${companies}]]*/ [];
         
-        // Set up Server-Sent Events for real-time updates
-        const eventSource = new EventSource('/api/chart-updates');
+        // Set up WebSocket connection for real-time updates
+        let stompClient = null;
         
-        eventSource.addEventListener('chart-update', function(event) {
-            console.log('Received chart update event');
-            refreshCharts();
-        });
-        
-        eventSource.onerror = function(event) {
-            console.log('SSE connection error:', event);
-        };
+        try {
+            stompClient = new StompJs.Client({
+                webSocketFactory: () => new SockJS('/ws'),
+                connectHeaders: {},
+                debug: function(str) {
+                    console.log('STOMP: ' + str);
+                },
+                reconnectDelay: 5000,
+                heartbeatIncoming: 4000,
+                heartbeatOutgoing: 4000
+            });
+            
+            stompClient.onConnect = function(frame) {
+                console.log('WebSocket connected: ', frame);
+                
+                // Subscribe to chart updates
+                stompClient.subscribe('/topic/chart-updates', function(message) {
+                    console.log('Received chart update message:', message.body);
+                    refreshCharts();
+                });
+            };
+            
+            stompClient.onStompError = function(frame) {
+                console.error('WebSocket STOMP error:', frame);
+            };
+            
+            stompClient.onWebSocketError = function(error) {
+                console.error('WebSocket connection error:', error);
+            };
+            
+            // Activate the STOMP client
+            stompClient.activate();
+            console.log('WebSocket client activated');
+        } catch (error) {
+            console.error('Failed to initialize WebSocket connection:', error);
+            console.log('Charts will still work, but real-time updates will be disabled');
+        }
         
         function refreshCharts() {
             fetch('/api/chart-data/all')
