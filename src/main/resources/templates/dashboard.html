@@ -110,7 +110,7 @@
                     console.error('Error fetching chart data:', error);
                 });
         }
-        
+
         function drawProfitBarChart(data) {
             // Prepare profit data for bar chart
             const profitData = data.map(company => ({
@@ -193,7 +193,7 @@
                 .attr('y', d => yScale(d.name))  // Animate Y position for ranking changes
                 .attr('x', d => d.currentProfit >= 0 ? xScale(0) : xScale(d.currentProfit))  // Position based on sign
                 .attr('width', d => Math.abs(xScale(d.currentProfit) - xScale(0)))  // Width from zero to value
-                .attr('fill', d => d.currentProfit >= 0 ? '#38803A' : '#dc3545');
+                .attr('fill', d => d.currentProfit >= 0 ? '#38803A' : '#B8001A');
             
             // EXIT - remove bars for companies no longer in data
             bars.exit()
