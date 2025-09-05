@@ -26,7 +26,7 @@
         <div class="navbar-menu" id="navbar-menu">
             <ul class="navbar-nav">
                 <li><a href="/" class="active">Home</a></li>
-                <li><a href="/dashboard">All Companies</a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
                 <li><a href="/dashboard/company">Select Company</a></li>
                 <li><a href="/company_input">Add Company</a></li>
                 <li><a href="/price_input">Add Price</a></li>
@@ -36,20 +36,18 @@
     </nav>
     <div class="content-wrapper">
         <div class="intro-section">
-        <h1>🏢 Economic Competition Simulation</h1>
-        <p>Welcome to an interactive learning experience that demonstrates the principles of competitive economics! 
-           Compete with your friends to see who can maximize their company's profit in a dynamic market where 
-           everyone's pricing decisions affect demand for all competitors.</p>
+        <h1>Competition Simulation</h1>
+        <p>Understanding the impact of pricing strategies on market dynamics is essential, as pricing decisions influence not only individual profitability but also consumer behaviour, competitive responses, and overall market efficiency. In this competition simulator, you and your peers can experiment with pricing choices and observe how these decisions affect outcomes. The objective is to maximise profit by selecting the price at which you will sell your goods, while navigating the dynamics of competition.</p>
     </div>
 
     <div class="company-card">
-        <h2>🎮 How to Play</h2>
+        <h2>How to Play</h2>
         
         <div class="step">
             <div class="step-number">1</div>
             <div class="step-content">
                 <h3>Create Your Company</h3>
-                <p>Start by creating a fictional company with a unique name. This will be your identity in the competitive market simulation.</p>
+                <p>Start by creating a fictional company with a unique name.</p>
             </div>
         </div>
 
@@ -57,7 +55,8 @@
             <div class="step-number">2</div>
             <div class="step-content">
                 <h3>Set Your Initial Price</h3>
-                <p>Choose your starting price between ¤1.00 and ¤20.00. Wait for all participants to set their initial prices before the competition begins. Remember: your pricing affects not just your demand, but everyone else's too!</p>
+                <p>Choose your starting price between ¤1.00 and ¤20.00, remembering that the fixed marginal cost is ¤2.00.
+                    Wait for all participants to set their initial prices before the competition begins. <strong>Important</strong>: your pricing affects not just your demand, but everyone else's too!</p>
             </div>
         </div>
 
@@ -70,8 +69,20 @@
         </div>
     </div>
 
+        <div class="cta-section">
+            <h2>Ready to Start?</h2>
+            <p style="margin-bottom: 20px; color: #666;">Join the economic simulation and test your business strategy skills!</p>
+
+            <a href="/company_input" class="start-button">Create Your Company</a>
+
+            <div style="margin-top: 15px;">
+                <a href="/dashboard" class="secondary-button">View Dashboard</a>
+                <a href="/price_input" class="secondary-button">Set Prices</a>
+            </div>
+        </div>
+
     <div class="company-card">
-        <h2>📚 What You'll Learn</h2>
+        <h2>What You'll Learn</h2>
         <div class="concepts-grid">
             <div class="chart-container">
                 <h3>Market Competition</h3>
@@ -101,18 +112,6 @@
                 <strong>Profit:</strong> profit = (price - 2) × demand<br>
                 <small>where 2 = fixed cost per unit</small>
             </div>
-        </div>
-    </div>
-
-    <div class="cta-section">
-        <h2>Ready to Start?</h2>
-        <p style="margin-bottom: 20px; color: #666;">Join the economic simulation and test your business strategy skills!</p>
-        
-        <a href="/company_input" class="start-button">Create Your Company</a>
-        
-        <div style="margin-top: 15px;">
-            <a href="/dashboard" class="secondary-button">View Dashboard</a>
-            <a href="/price_input" class="secondary-button">Set Prices</a>
         </div>
     </div>
     </div>
