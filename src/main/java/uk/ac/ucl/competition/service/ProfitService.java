@@ -25,17 +25,20 @@ public class ProfitService {
 
     private static final Logger logger = LoggerFactory.getLogger(ProfitService.class);
 
-    @Autowired
-    private ProfitRepository profitRepository;
-
-    @Autowired
-    private PriceRepository priceRepository;
-
-    @Autowired
-    private DemandRepository demandRepository;
+    private final ProfitRepository profitRepository;
+    private final PriceRepository priceRepository;
+    private final DemandRepository demandRepository;
+    private final ChartUpdateService chartUpdateService;
     
-    @Autowired
-    private ChartUpdateService chartUpdateService;
+    public ProfitService(ProfitRepository profitRepository, 
+                        PriceRepository priceRepository,
+                        DemandRepository demandRepository,
+                        ChartUpdateService chartUpdateService) {
+        this.profitRepository = profitRepository;
+        this.priceRepository = priceRepository;
+        this.demandRepository = demandRepository;
+        this.chartUpdateService = chartUpdateService;
+    }
 
     public BigDecimal calculateProfit(BigDecimal price, BigDecimal demand) {
         // Formula: profit = (price - 2) * demand

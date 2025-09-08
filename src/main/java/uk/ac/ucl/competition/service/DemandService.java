@@ -23,11 +23,13 @@ public class DemandService {
 
     private static final Logger logger = LoggerFactory.getLogger(DemandService.class);
 
-    @Autowired
-    private DemandRepository demandRepository;
-
-    @Autowired
-    private PriceRepository priceRepository;
+    private final DemandRepository demandRepository;
+    private final PriceRepository priceRepository;
+    
+    public DemandService(DemandRepository demandRepository, PriceRepository priceRepository) {
+        this.demandRepository = demandRepository;
+        this.priceRepository = priceRepository;
+    }
 
     public BigDecimal calculateDemand(Company company, LocalTime time, BigDecimal ownPrice) {
         BigDecimal averageCompetitorPrice = calculateAverageCompetitorPriceUsingLatest(company, time);

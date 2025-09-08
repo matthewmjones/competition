@@ -298,8 +298,7 @@
                 
             const demandLine = d3.line()
                 .x(d => xScale(d.time))
-                .y(d => yScaleDemand(d.demand))
-                .curve(d3.curveMonotoneX);
+                .y(d => yScaleDemand(d.demand));
                 
             const profitLine = d3.line()
                 .x(d => xScale(d.time))
@@ -318,6 +317,7 @@
                     .attr('class', 'grid')
                     .attr('transform', `translate(0,${height})`)
                     .call(d3.axisBottom(xScale)
+                        .ticks(5)
                         .tickSize(-height)
                         .tickFormat('')
                     );
@@ -333,6 +333,7 @@
                     .attr('class', 'axis')
                     .attr('transform', `translate(0,${height})`)
                     .call(d3.axisBottom(xScale)
+                        .ticks(5)
                         .tickFormat(d3.timeFormat('%H:%M'))
                     );
                 
@@ -384,7 +385,7 @@
                         .attr('class', 'dot')
                         .attr('cx', d => xScale(d.time))
                         .attr('cy', d => yScalePrice(d.price))
-                        .attr('r', 5)
+                        .attr('r', 4)
                         .append('title')
                         .text(d => `${d3.timeFormat('%H:%M')(d.time)}: ¤${d.price.toFixed(2)}`);
                 }
@@ -393,15 +394,19 @@
                     g1.append('path')
                         .datum(demandData)
                         .attr('class', 'line-demand')
-                        .attr('d', demandLine);
+                        .attr('d', demandLine)
+                        .style('fill', 'none')
+                        .style('stroke', '#d2001c')
+                        .style('stroke-width', '2px');
                     
                     g1.selectAll('.dot-demand')
                         .data(demandData)
                         .enter().append('circle')
                         .attr('class', 'dot-demand')
+                        .attr('fill','#d2001c')
                         .attr('cx', d => xScale(d.time))
                         .attr('cy', d => yScaleDemand(d.demand))
-                        .attr('r', 5)
+                        .attr('r', 4)
                         .append('title')
                         .text(d => `${d3.timeFormat('%H:%M')(d.time)}: ${d.demand.toFixed(2)} units`);
                 }
@@ -419,6 +424,7 @@
                     .attr('class', 'grid')
                     .attr('transform', `translate(0,${height})`)
                     .call(d3.axisBottom(xScale)
+                        .ticks(5)
                         .tickSize(-height)
                         .tickFormat('')
                     );
@@ -434,6 +440,7 @@
                     .attr('class', 'axis')
                     .attr('transform', `translate(0,${height})`)
                     .call(d3.axisBottom(xScale)
+                        .ticks(5)
                         .tickFormat(d3.timeFormat('%H:%M'))
                     );
                 
@@ -469,7 +476,7 @@
                     .attr('class', 'dot-profit')
                     .attr('cx', d => xScale(d.time))
                     .attr('cy', d => yScaleProfit(d.profit))
-                    .attr('r', 5)
+                    .attr('r', 4)
                     .append('title')
                     .text(d => `${d3.timeFormat('%H:%M')(d.time)}: ¤${d.profit.toFixed(2)}`);
             }

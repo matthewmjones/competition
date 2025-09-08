@@ -48,7 +48,7 @@
         <h3>Price & Demand Trends</h3>
         <div style="margin-bottom: 10px;">
             <span style="color: #007cba;">■ Price (¤1.00 - ¤20.00)</span> &nbsp;&nbsp; 
-            <span style="color: #d2001c;">■ Demand (calculated)</span>
+            <span style="color: #38803A;">■ Demand (calculated)</span>
         </div>
         <div id="charts-grid"></div>
     </div>
@@ -380,8 +380,7 @@
                 
             const demandLine = d3.line()
                 .x(d => xScale(d.time))
-                .y(d => yScaleDemand(d.demand))
-                .curve(d3.curveMonotoneX);
+                .y(d => yScaleDemand(d.demand));
             
             // Create charts
             const chartsGrid = d3.select('#charts-grid');
@@ -413,6 +412,7 @@
                     .attr('class', 'grid')
                     .attr('transform', `translate(0,${height})`)
                     .call(d3.axisBottom(xScale)
+                        .ticks(5)
                         .tickSize(-height)
                         .tickFormat('')
                     );
@@ -429,6 +429,7 @@
                     .attr('class', 'axis')
                     .attr('transform', `translate(0,${height})`)
                     .call(d3.axisBottom(xScale)
+                        .ticks(5)
                         .tickFormat(d3.timeFormat('%H:%M'))
                     );
                 
@@ -487,12 +488,16 @@
                     g.append('path')
                         .datum(company.demands)
                         .attr('class', 'line-demand')
-                        .attr('d', demandLine);
+                        .attr('d', demandLine)
+                        .style('fill', 'none')
+                        .style('stroke', '#38803A')
+                        .style('stroke-width', '2px');
                     
                     g.selectAll('.dot-demand')
                         .data(company.demands)
                         .enter().append('circle')
                         .attr('class', 'dot-demand')
+                        .style('fill', '#38803A')
                         .attr('cx', d => xScale(d.time))
                         .attr('cy', d => yScaleDemand(d.demand))
                         .attr('r', 3)

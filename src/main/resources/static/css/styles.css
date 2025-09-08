@@ -1104,7 +1104,7 @@ svg {
 
 .line-demand {
     fill: none;
-    stroke: var(--color-accent);
+    stroke: var(--color-secondary);
     stroke-width: 2px;
 }
 
@@ -1122,8 +1122,8 @@ svg {
 }
 
 .dot-demand {
-    fill: var(--color-accent);
-    stroke: var(--color-accent);
+    fill: var(--color-secondary);
+    stroke: var(--color-secondary);
     stroke-width: 1.5px;
 }
 
@@ -1144,7 +1144,7 @@ svg {
 }
 
 .axis-demand {
-    color: var(--color-accent);
+    color: var(--color-secondary);
 }
 
 .axis-profit {
